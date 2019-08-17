@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  x86_64_build:
+  x86_64_linux_build:
     docker:
       # `kronicdeth` is temporary until we get a DockerHub organization
       - image: kronicdeth/lumen-development
@@ -14,12 +14,12 @@ jobs:
           command: rustc --version; cargo --version; rustup --version
       - restore_cache:
           keys:
-            - v4-cargo-cache-x86_64-{{ checksum "Cargo.lock" }}
+            - v4-cargo-cache-x86_64-linux-{{ checksum "Cargo.lock" }}
       - run:
           name: Build all targets
           command: cargo test --all --all-targets --locked --no-run
       - save_cache:
-          key: v4-cargo-cache-x86_64-{{ checksum "Cargo.lock" }}
+          key: v4-cargo-cache-x86_64-linux-{{ checksum "Cargo.lock" }}
           paths:
             - cargo
             - target/debug/.fingerprint
@@ -193,7 +193,7 @@ jobs:
           name: Run all tests
           working_directory: "liblumen_beam"
           command: cargo test --locked
-  x86_64_liblumen_codegen_test:
+  x86_64_linux_liblumen_codegen_test:
     docker:
       # `kronicdeth` is temporary until we get a DockerHub organization
       - image: kronicdeth/lumen-development
@@ -206,7 +206,7 @@ jobs:
           name: Run all tests
           working_directory: "liblumen_codegen"
           command: cargo test --locked
-  x86_64_liblumen_common_test:
+  x86_64_linux_liblumen_common_test:
     docker:
       # `kronicdeth` is temporary until we get a DockerHub organization
       - image: kronicdeth/lumen-development
@@ -219,7 +219,7 @@ jobs:
           name: Run all tests
           working_directory: "liblumen_common"
           command: cargo test --locked
-  x86_64_liblumen_compiler_test:
+  x86_64_linux_liblumen_compiler_test:
     docker:
       # `kronicdeth` is temporary until we get a DockerHub organization
       - image: kronicdeth/lumen-development
@@ -232,7 +232,7 @@ jobs:
           name: Run all tests
           working_directory: "liblumen_compiler"
           command: cargo test --locked
-  x86_64_liblumen_core_test:
+  x86_64_linux_liblumen_core_test:
     docker:
       # `kronicdeth` is temporary until we get a DockerHub organization
       - image: kronicdeth/lumen-development
@@ -245,7 +245,7 @@ jobs:
           name: Run all tests
           working_directory: "liblumen_core"
           command: cargo test --locked
-  x86_64_liblumen_diagnostics_test:
+  x86_64_linux_liblumen_diagnostics_test:
     docker:
       # `kronicdeth` is temporary until we get a DockerHub organization
       - image: kronicdeth/lumen-development
@@ -258,7 +258,7 @@ jobs:
           name: Run all tests
           working_directory: "liblumen_diagnostics"
           command: cargo test --locked
-  x86_64_liblumen_eir_interpreter_test:
+  x86_64_linux_liblumen_eir_interpreter_test:
     docker:
       # `kronicdeth` is temporary until we get a DockerHub organization
       - image: kronicdeth/lumen-development
@@ -275,7 +275,7 @@ jobs:
           name: Fibonacci
           working_directory: "liblumen_eir_interpreter"
           command: cargo run -- --ident fib:run/0 fib.erl
-  x86_64_liblumen_syntax_test:
+  x86_64_linux_liblumen_syntax_test:
     docker:
       # `kronicdeth` is temporary until we get a DockerHub organization
       - image: kronicdeth/lumen-development
@@ -288,7 +288,7 @@ jobs:
           name: Run all tests
           working_directory: "liblumen_syntax"
           command: cargo test --locked
-  x86_64_lumen_test:
+  x86_64_linux_lumen_test:
     docker:
       # `kronicdeth` is temporary until we get a DockerHub organization
       - image: kronicdeth/lumen-development
@@ -301,7 +301,7 @@ jobs:
           name: Run all tests
           working_directory: "lumen"
           command: cargo test --locked
-  x86_64_lumen_runtime_test:
+  x86_64_linux_lumen_runtime_test:
     docker:
       # `kronicdeth` is temporary until we get a DockerHub organization
       - image: kronicdeth/lumen-development
@@ -320,50 +320,51 @@ workflows:
   version: 2
   primary:
     jobs:
-      - x86_64_build
+      - x86_64_linux_build
+      - x86_64_macos_build
       - wasm32_build
       - check_formatted:
           requires:
-            - x86_64_build
-      - x86_64_examples_spawn_chain_test:
+            - x86_64_linux_build
+      - x86_64_linux_examples_spawn_chain_test:
           requires:
-            - x86_64_build
-      - x86_64_liblumen_alloc_test:
+            - x86_64_linux_build
+      - x86_64_linux_liblumen_alloc_test:
           requires:
-            - x86_64_build
-      - x86_64_liblumen_arena_test:
+            - x86_64_linux_build
+      - x86_64_linux_liblumen_arena_test:
           requires:
-            - x86_64_build
-      - x86_64_liblumen_beam_test:
+            - x86_64_linux_build
+      - x86_64_linux_liblumen_beam_test:
           requires:
-            - x86_64_build
-      - x86_64_liblumen_codegen_test:
+            - x86_64_linux_build
+      - x86_64_linux_liblumen_codegen_test:
           requires:
-            - x86_64_build
-      - x86_64_liblumen_common_test:
+            - x86_64_linux_build
+      - x86_64_linux_liblumen_common_test:
           requires:
-            - x86_64_build
-      - x86_64_liblumen_compiler_test:
+            - x86_64_linux_build
+      - x86_64_linux_liblumen_compiler_test:
           requires:
-            - x86_64_build
-      - x86_64_liblumen_core_test:
+            - x86_64_linux_build
+      - x86_64_linux_liblumen_core_test:
           requires:
-            - x86_64_build
-      - x86_64_liblumen_diagnostics_test:
+            - x86_64_linux_build
+      - x86_64_linux_liblumen_diagnostics_test:
           requires:
-            - x86_64_build
-      - x86_64_liblumen_eir_interpreter_test:
+            - x86_64_linux_build
+      - x86_64_linux_liblumen_eir_interpreter_test:
           requires:
-            - x86_64_build
-      - x86_64_liblumen_syntax_test:
+            - x86_64_linux_build
+      - x86_64_linux_liblumen_syntax_test:
           requires:
-            - x86_64_build
-      - x86_64_lumen_test:
+            - x86_64_linux_build
+      - x86_64_linux_lumen_test:
           requires:
-            - x86_64_build
-      - x86_64_lumen_runtime_test:
+            - x86_64_linux_build
+      - x86_64_linux_lumen_runtime_test:
           requires:
-            - x86_64_build
+            - x86_64_linux_build
       - chrome_examples_spawn_chain_test:
           requires:
             - wasm32_build
