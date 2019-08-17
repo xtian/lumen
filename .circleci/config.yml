@@ -115,7 +115,7 @@ jobs:
           command: |
             rustfmt --version
             cargo fmt -- --check
-  chrome_examples_spawn_chain_test:
+  wasm32_chrome_examples_spawn_chain_test:
     docker:
       # `kronicdeth` is temporary until we get a DockerHub organization
       - image: kronicdeth/lumen-development
@@ -128,7 +128,7 @@ jobs:
           name: Run all tests
           working_directory: "examples/spawn-chain"
           command: wasm-pack test --chrome --headless
-  firefox_examples_spawn_chain_test:
+  wasm32_firefox_examples_spawn_chain_test:
     docker:
       # `kronicdeth` is temporary until we get a DockerHub organization
       - image: kronicdeth/lumen-development
@@ -365,10 +365,10 @@ workflows:
       - x86_64_linux_lumen_runtime_test:
           requires:
             - x86_64_linux_build
-      - chrome_examples_spawn_chain_test:
+      - wasm32_chrome_examples_spawn_chain_test:
           requires:
             - wasm32_build
-      - firefox_examples_spawn_chain_test:
+      - wasm32_firefox_examples_spawn_chain_test:
           requires:
             - wasm32_build
 
