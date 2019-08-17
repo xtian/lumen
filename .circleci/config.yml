@@ -72,9 +72,19 @@ jobs:
       - run:
           name: Version Information
           command: rustc --version; cargo --version; rustup --version
+      - restore_cache:
+          keys:
+            - v4-cargo-cache-x86_64-macos-{{ checksum "Cargo.lock" }}
       - run:
           name: Build all targets
-          command: cargo test --all --all-targets --locked --no-run         j
+          command: cargo test --all --all-targets --locked --no-run
+      - save_cache:
+          key: v4-cargo-cache-x86_64-macos-{{ checksum "Cargo.lock" }}
+          paths:
+            - cargo
+            - target/debug/.fingerprint
+            - target/debug/build
+            - target/debug/deps
 #  wasm32_build:
 #    docker:
 #      # `kronicdeth` is temporary until we get a DockerHub organization
