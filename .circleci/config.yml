@@ -81,6 +81,7 @@ executors:
     environment:
       CARGO_HOME: cargo
       HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
       LLVM_SYS_70_PREFIX: /usr/local/opt/llvm
 jobs:
   check_formatted:
@@ -121,179 +122,154 @@ jobs:
       - macos_install
       - test:
           working_directory: << parameters.working_directory >>
-
-#  wasm32_build:
-#    docker:
-#      # `kronicdeth` is temporary until we get a DockerHub organization
-#      - image: kronicdeth/lumen-development
-#    environment:
-#      CARGO_HOME: cargo
-#    steps:
-#      - checkout
-#      - run:
-#          name: Version Information
-#          command: rustc --version; cargo --version; rustup --version
-#      - restore_cache:
-#          keys:
-#            - v4-cargo-cache-wasm32-{{ checksum "Cargo.lock" }}
-#      - run:
-#          working_directory: "lumen_runtime"
-#          command: wasm-pack build
-#      - save_cache:
-#          key: v4-cargo-cache-wasm32-{{ checksum "Cargo.lock" }}
-#          paths:
-#            - cargo
-#            - target/debug/.fingerprint
-#            - target/debug/build
-#            - target/debug/deps
-#      - persist_to_workspace:
-#          root: .
-#          paths:
-#            - cargo
-#            - examples
-#            - liblumen_alloc
-#            - liblumen_alloc_macros
-#            - liblumen_arena
-#            - liblumen_beam
-#            - liblumen_codegen
-#            - liblumen_common
-#            - liblumen_compiler
-#            - liblumen_core
-#            - liblumen_diagnostics
-#            - liblumen_eir_interpreter
-#            - liblumen_syntax
-#            - lumen
-#            - lumen_runtime
-#            - lumen_web
-#            - target/debug/.fingerprint
-#            - target/debug/build
-#            - target/debug/deps
-#            - .rustfmt.toml
-#            - Cargo.lock
-#            - Cargo.toml
-#            - Makefile
-#  wasm32_chrome_examples_spawn_chain_test:
-#    docker:
-#      # `kronicdeth` is temporary until we get a DockerHub organization
-#      - image: kronicdeth/lumen-development
-#    environment:
-#      CARGO_HOME: cargo
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run:
-#          name: Run all tests
-#          working_directory: "examples/spawn-chain"
-#          command: wasm-pack test --chrome --headless
-#  wasm32_firefox_examples_spawn_chain_test:
-#    docker:
-#      # `kronicdeth` is temporary until we get a DockerHub organization
-#      - image: kronicdeth/lumen-development
-#    environment:
-#      CARGO_HOME: cargo
-#    steps:
-#      - attach_workspace:
-#          at: .
-#      - run:
-#          name: Run all tests
-#          working_directory: "examples/spawn-chain"
-#          command: wasm-pack test --firefox --headless
-
+  wasm32_linux_examples_spawn_chain_test:
+    parameters:
+      browser:
+        type: string
+    executor: x86_64_linux
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Run all tests
+          working_directory: "examples/spawn-chain"
+          command: wasm-pack test --<< parameters.browser >> --headless
+  wasm32_safari_examples_spawn_chain_test:
+    executor: x86_64_macos
+    steps:
+      - run:
+          name: Enable safari driver
+          command: sudo /usr/bin/safaridriver --enable
+      - run:
+          name: Install LLVM
+          command: brew install llvm
+      - checkout
+      - restore_cache:
+          keys:
+            - v4-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}-wasm32-safari
+      - run:
+          name: Install rustup and nightly toolchain
+          command: |
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
+            echo 'export PATH=/Users/distiller/project/cargo/bin:$PATH' >> $BASH_ENV
+      - run:
+          name: Install wasm32 target
+          command: rustup target add wasm32-unknown-unknown --toolchain nightly
+      - run:
+          name: Install wasm-bindgen-cli
+          command: cargo +nightly install wasm-bindgen-cli
+      - run:
+          name: Install wasm-pack
+          command: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - run:
+          name: Run all tests
+          working_directory: "examples/spawn-chain"
+          command: wasm-pack test --safari --headless
+      - save_cache:
+          key: v4-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}-wasm32-safari
+          paths:
+            - cargo
+            - target/debug/.fingerprint
+            - target/debug/build
+            - target/debug/deps
 workflows:
   version: 2
   primary:
     jobs:
-      - check_formatted:
-          requires:
-            - x86_64_linux_build
-      - x86_64_linux_build
-      - x86_64_linux_test:
-          name: x86_64_linux_liblumen_alloc_test
-          requires:
-           - x86_64_linux_build
-          working_directory: "liblumen_alloc"
-      - x86_64_linux_test:
-          name: x86_64_linux_liblumen_arena_test
-          requires:
-           - x86_64_linux_build
-          working_directory: "liblumen_arena"
-      - x86_64_linux_test:
-          name: x86_64_linux_liblumen_beam_test
-          requires:
-            - x86_64_linux_build
-          working_directory: "liblumen_beam"
-      - x86_64_linux_test:
-          name: x86_64_linux_liblumen_core_test
-          requires:
-            - x86_64_linux_build
-          working_directory: "liblumen_core"
-      - x86_64_linux_test:
-          name: x86_64_linux_liblumen_diagnostics_test
-          requires:
-            - x86_64_linux_build
-          working_directory: "liblumen_diagnostics"
-      - x86_64_linux_test:
-          name: x86_64_linux_liblumen_eir_interpreter_test
-          requires:
-            - x86_64_linux_build
-          working_directory: "liblumen_eir_interpreter"
-      - x86_64_linux_test:
-          name: x86_64_linux_liblumen_syntax_test
-          requires:
-            - x86_64_linux_build
-          working_directory: "liblumen_syntax"
-      - x86_64_linux_test:
-          name: x86_64_linux_lumen_runtime_test
-          requires:
-            - x86_64_linux_build
-          working_directory: "lumen_runtime"
-      - x86_64_macos_build
-      - x86_64_macos_test:
-          name: x86_64_macos_liblumen_alloc_test
-          requires:
-           - x86_64_macos_build
-          working_directory: "liblumen_alloc"
-      - x86_64_macos_test:
-          name: x86_64_macos_liblumen_arena_test
-          requires:
-           - x86_64_macos_build
-          working_directory: "liblumen_arena"
-      - x86_64_macos_test:
-          name: x86_64_macos_liblumen_beam_test
-          requires:
-            - x86_64_macos_build
-          working_directory: "liblumen_beam"
-      - x86_64_macos_test:
-          name: x86_64_macos_liblumen_core_test
-          requires:
-            - x86_64_macos_build
-          working_directory: "liblumen_core"
-      - x86_64_macos_test:
-          name: x86_64_macos_liblumen_diagnostics_test
-          requires:
-            - x86_64_macos_build
-          working_directory: "liblumen_diagnostics"
-      - x86_64_macos_test:
-          name: x86_64_macos_liblumen_eir_interpreter_test
-          requires:
-            - x86_64_macos_build
-          working_directory: "liblumen_eir_interpreter"
-      - x86_64_macos_test:
-          name: x86_64_macos_liblumen_syntax_test
-          requires:
-            - x86_64_macos_build
-          working_directory: "liblumen_syntax"
-      - x86_64_macos_test:
-          name: x86_64_macos_lumen_runtime_test
-          requires:
-            - x86_64_macos_build
-          working_directory: "lumen_runtime"
-#      - wasm32_build
-#      - wasm32_chrome_examples_spawn_chain_test:
+#      - check_formatted:
 #          requires:
-#            - wasm32_build
-#      - wasm32_firefox_examples_spawn_chain_test:
+#            - x86_64_linux_build
+#      - x86_64_linux_build
+#      - x86_64_linux_test:
+#          name: x86_64_linux_liblumen_alloc_test
 #          requires:
-#            - wasm32_build
-#
+#           - x86_64_linux_build
+#          working_directory: "liblumen_alloc"
+#      - x86_64_linux_test:
+#          name: x86_64_linux_liblumen_arena_test
+#          requires:
+#           - x86_64_linux_build
+#          working_directory: "liblumen_arena"
+#      - x86_64_linux_test:
+#          name: x86_64_linux_liblumen_beam_test
+#          requires:
+#            - x86_64_linux_build
+#          working_directory: "liblumen_beam"
+#      - x86_64_linux_test:
+#          name: x86_64_linux_liblumen_core_test
+#          requires:
+#            - x86_64_linux_build
+#          working_directory: "liblumen_core"
+#      - x86_64_linux_test:
+#          name: x86_64_linux_liblumen_diagnostics_test
+#          requires:
+#            - x86_64_linux_build
+#          working_directory: "liblumen_diagnostics"
+#      - x86_64_linux_test:
+#          name: x86_64_linux_liblumen_eir_interpreter_test
+#          requires:
+#            - x86_64_linux_build
+#          working_directory: "liblumen_eir_interpreter"
+#      - x86_64_linux_test:
+#          name: x86_64_linux_liblumen_syntax_test
+#          requires:
+#            - x86_64_linux_build
+#          working_directory: "liblumen_syntax"
+#      - x86_64_linux_test:
+#          name: x86_64_linux_lumen_runtime_test
+#          requires:
+#            - x86_64_linux_build
+#          working_directory: "lumen_runtime"
+#      - x86_64_macos_build
+#      - x86_64_macos_test:
+#          name: x86_64_macos_liblumen_alloc_test
+#          requires:
+#           - x86_64_macos_build
+#          working_directory: "liblumen_alloc"
+#      - x86_64_macos_test:
+#          name: x86_64_macos_liblumen_arena_test
+#          requires:
+#           - x86_64_macos_build
+#          working_directory: "liblumen_arena"
+#      - x86_64_macos_test:
+#          name: x86_64_macos_liblumen_beam_test
+#          requires:
+#            - x86_64_macos_build
+#          working_directory: "liblumen_beam"
+#      - x86_64_macos_test:
+#          name: x86_64_macos_liblumen_core_test
+#          requires:
+#            - x86_64_macos_build
+#          working_directory: "liblumen_core"
+#      - x86_64_macos_test:
+#          name: x86_64_macos_liblumen_diagnostics_test
+#          requires:
+#            - x86_64_macos_build
+#          working_directory: "liblumen_diagnostics"
+#      - x86_64_macos_test:
+#          name: x86_64_macos_liblumen_eir_interpreter_test
+#          requires:
+#            - x86_64_macos_build
+#          working_directory: "liblumen_eir_interpreter"
+#      - x86_64_macos_test:
+#          name: x86_64_macos_liblumen_syntax_test
+#          requires:
+#            - x86_64_macos_build
+#          working_directory: "liblumen_syntax"
+#      - x86_64_macos_test:
+#          name: x86_64_macos_lumen_runtime_test
+#          requires:
+#            - x86_64_macos_build
+#          working_directory: "lumen_runtime"
+#      - wasm32_linux_examples_spawn_chain_test:
+#          name: wasm32_chrome_examples_spawn_chain_test
+#          requires:
+#            - x86_64_linux_build
+#          browser: chrome
+#      - wasm32_linux_examples_spawn_chain_test:
+#          name: wasm32_firefox_examples_spawn_chain_test
+#          requires:
+#            - x86_64_linux_build
+#          browser: firefox
+      - wasm32_safari_examples_spawn_chain_test
 
