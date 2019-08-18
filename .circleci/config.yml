@@ -223,21 +223,6 @@ workflows:
             - x86_64_linux_build
           working_directory: "liblumen_beam"
       - x86_64_linux_test:
-          name: x86_64_linux_liblumen_codegen_test
-          requires:
-            - x86_64_linux_build
-          working_directory: "liblumen_codegen"
-      - x86_64_linux_test:
-          name: x86_64_linux_liblumen_common_test
-          requires:
-            - x86_64_linux_build
-          working_directory: "liblumen_common"
-      - x86_64_linux_test:
-          name: x86_64_linux_liblumen_compiler_test
-          requires:
-            - x86_64_linux_build
-          working_directory: "liblumen_compiler"
-      - x86_64_linux_test:
           name: x86_64_linux_liblumen_core_test
           requires:
             - x86_64_linux_build
@@ -257,11 +242,6 @@ workflows:
           requires:
             - x86_64_linux_build
           working_directory: "liblumen_syntax"
-      - x86_64_linux_test:
-          name: x86_64_linux_lumen_test
-          requires:
-            - x86_64_linux_build
-          working_directory: "lumen"
       - x86_64_linux_test:
           name: x86_64_linux_lumen_runtime_test
           requires:
@@ -284,21 +264,6 @@ workflows:
             - x86_64_macos_build
           working_directory: "liblumen_beam"
       - x86_64_macos_test:
-          name: x86_64_macos_liblumen_codegen_test
-          requires:
-            - x86_64_macos_build
-          working_directory: "liblumen_codegen"
-      - x86_64_macos_test:
-          name: x86_64_macos_liblumen_common_test
-          requires:
-            - x86_64_macos_build
-          working_directory: "liblumen_common"
-      - x86_64_macos_test:
-          name: x86_64_macos_liblumen_compiler_test
-          requires:
-            - x86_64_macos_build
-          working_directory: "liblumen_compiler"
-      - x86_64_macos_test:
           name: x86_64_macos_liblumen_core_test
           requires:
             - x86_64_macos_build
@@ -318,11 +283,6 @@ workflows:
           requires:
             - x86_64_macos_build
           working_directory: "liblumen_syntax"
-      - x86_64_macos_test:
-          name: x86_64_macos_lumen_test
-          requires:
-            - x86_64_macos_build
-          working_directory: "lumen"
       - x86_64_macos_test:
           name: x86_64_macos_lumen_runtime_test
           requires:
