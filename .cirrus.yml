@@ -8,29 +8,23 @@ x86_64_task_template: &x86_64_TASK_TEMPLATE
   build_script: cargo build
   # `*_test_script`s in order of crate dependency graph
   liblumen_arena_test_script: |
-    pushd liblumen_arena
+    cd liblumen_arena
     cargo test
-    popd
   liblumen_core_test_script: |
-    pushd liblumen_core
+    cd liblumen_core
     cargo test
-    popd
   liblumen_alloc_test_script: |
-    pushd liblumen_alloc
+    cd liblumen_alloc
     cargo test
-    popd
   lumen_runtime_test_script: |
-    pushd lumen_runtime
+    cd lumen_runtime
     cargo test
-    popd
   liblumen_eir_interpreter_test_script: |
-    pushd liblumen_eir_interpreter
+    cd liblumen_eir_interpreter
     cargo test
-    popd
   examples_spawn_chain_test_script: |
-    pushd examples/spawn-chain
+    cd examples/spawn-chain
     cargo test
-    popd
 
 task:
   name: FreeBSD x86_64
