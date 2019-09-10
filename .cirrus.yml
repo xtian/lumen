@@ -82,7 +82,11 @@ task:
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
   install_wasm32_target_script: rustup target add wasm32-unknown-unknown --toolchain nightly
   install_wasm_bindgen_cli_script: cargo +nightly install wasm-bindgen-cli
-  install_wasm_pack_script: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+  build_wasm_pack_script: |
+    git clone --single-branch --branch v0.8.1 git@github.com:rustwasm/wasm-pack.git
+    cd wasm-pack
+    cargo build --release --locked
+    cargo install wasm-pack
   install_firefox_script: pkg install firefox
   install_gecko_driver_script: pkg install geckodriver
   firefox_version_script: firefox --version
