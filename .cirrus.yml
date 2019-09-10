@@ -25,20 +25,22 @@ x86_64_task_template: &x86_64_TASK_TEMPLATE
   examples_spawn_chain_test_script: |
     cd examples/spawn-chain
     cargo test
-
-task:
-  name: FreeBSD x86_64
-  freebsd_instance:
-    image: freebsd-11-2-release-amd64
-  env:
-    PATH: ${HOME}/.cargo/bin:${PATH}
-  freebsd_x86_64_cargo_cache:
-    folder: $CARGO_HOME/registry
-    fingerprint_script: cat Cargo.lock
-  install_rustup_script: |
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
-  << : *x86_64_TASK_TEMPLATE
-  before_cache_script: rm -rf $CARGO_HOME/registry/index
+#
+#task:
+#  name: FreeBSD x86_64
+#  freebsd_instance:
+#    image: freebsd-11-2-release-amd64
+#    cpu: 4
+#    memory: 12
+#  env:
+#    PATH: ${HOME}/.cargo/bin:${PATH}
+#  freebsd_x86_64_cargo_cache:
+#    folder: $CARGO_HOME/registry
+#    fingerprint_script: cat Cargo.lock
+#  install_rustup_script: |
+#    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
+#  << : *x86_64_TASK_TEMPLATE
+#  before_cache_script: rm -rf $CARGO_HOME/registry/index
 
 #task:
 #  name: Linux x86_64
@@ -66,6 +68,50 @@ task:
 #  <<: *x86_64_TASK_TEMPLATE
 #  before_cache_script: rm -rf $CARGO_HOME/registry/index
 #
+
+task:
+  name: FreeBSD wasm32
+  freebsd_instance:
+    image: freebsd-11-2-release-amd64
+  env:
+    PATH: ${HOME}/.cargo/bin:${PATH}
+  freebsd_wasm32_cargo_cache:
+    folder: $CARGO_HOME/registry
+    fingerprint_script: cat Cargo.lock
+  install_rustup_script: |
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
+  install_wasm32_target_script: rustup target add wasm32-unknown-unknown --toolchain nightly
+  install_wasm_bindgen_cli_script: cargo +nightly install wasm-bindgen-cli
+  install_wasm_pack_script: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+  install_firefox_script: pkg install firefox
+  install_gecko_driver_script: pkg install geckodriver
+  firefox_version_script: firefox --version
+  gecko_driver_version_script: geckodriver --version
+  lumen_web_test_script: |
+    cd lumen_web
+    wasm-pack test --headless --firefox
+  examples_spawn_chain_build_script: |
+    cd examples/spawn-chain
+    wasm-pack build
+  examples_spawn_chain_test_script: |
+    cd examples/spawn-chain
+    wasm-pack test --headless --firefox
+  examples_spawn_chain_package_script: |
+    cd examples/spawn-chain
+    cd www
+    npm install
+    cd ..
+    cd pkg
+    npm link
+    cd ..
+    cd www
+    npm link spawn-chain
+    npm run build
+    cd ..
+    cd ..
+  before_cache_script: rm -rf $CARGO_HOME/registry/index
+
+
 #task:
 #  name: Linux wasm32
 #  container:
