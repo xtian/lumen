@@ -75,6 +75,7 @@ task:
     image: freebsd-11-2-release-amd64
   env:
     PATH: ${HOME}/.cargo/bin:${PATH}
+  install_git_script: pkg install --yes git
   freebsd_wasm32_cargo_cache:
     folder: $CARGO_HOME/registry
     fingerprint_script: cat Cargo.lock
