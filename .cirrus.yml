@@ -73,18 +73,24 @@ task:
   name: FreeBSD wasm32
   freebsd_instance:
     image: freebsd-11-2-release-amd64
+    memory: 12
   env:
     PATH: ${HOME}/.cargo/bin:${PATH}
-  install_git_script: pkg install --yes git
+    # FreeBSD not being a Tier 1 platform for Rust means it does not get rust-lld built for it
+    # But, FreeBSD does use LLD as its default linker, which is `ld`
+    RUSTFLAGS: "-C linker=/usr/bin/ld.lld -C link_arg=-L/lib -C link_arg=-L/usr/lib"
+  lld_version_script: /usr/bin/ld.lld --version
   freebsd_wasm32_cargo_cache:
     folder: $CARGO_HOME/registry
     fingerprint_script: cat Cargo.lock
   install_rustup_script: |
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain=nightly
   install_wasm32_target_script: rustup target add wasm32-unknown-unknown --toolchain nightly
-  instal_wasm_pack_script: cargo +nightly install wasm-pack
-  install_firefox_script: pkg install firefox
-  install_gecko_driver_script: pkg install geckodriver
+  install_wasm_pack_script: |
+    cargo +nightly install wasm-pack
+    wasm-pack --version
+  install_firefox_script: pkg install --yes firefox
+  install_gecko_driver_script: pkg install --yes geckodriver
   firefox_version_script: firefox --version
   gecko_driver_version_script: geckodriver --version
   lumen_web_test_script: |
@@ -96,19 +102,6 @@ task:
   examples_spawn_chain_test_script: |
     cd examples/spawn-chain
     wasm-pack test --headless --firefox
-  examples_spawn_chain_package_script: |
-    cd examples/spawn-chain
-    cd www
-    npm install
-    cd ..
-    cd pkg
-    npm link
-    cd ..
-    cd www
-    npm link spawn-chain
-    npm run build
-    cd ..
-    cd ..
   before_cache_script: rm -rf $CARGO_HOME/registry/index
 
 
