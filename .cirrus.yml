@@ -81,9 +81,9 @@ task:
   install_git_script: pkg install --yes git
   install_llvm_script: |
     cd $HOME
-    git clone https://github.com/llvm-mirror/llvm
+    git clone --single-branch https://github.com/llvm-mirror/llvm
     cd llvm/tools
-    git clone https://github.com/llvm-mirror/lld
+    git clone --single-branch https://github.com/llvm-mirror/lld
     cd ..
     mkdir build
     cd build
