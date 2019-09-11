@@ -79,6 +79,7 @@ task:
     # But, FreeBSD does use LLD as its default linker, which is `ld`
     RUSTFLAGS: "-C linker=${HOME}/llvm/build/bin -C link_arg=-L/lib -C link_arg=-L/usr/lib"
   install_git_script: pkg install --yes git
+  install_cmake_script: pkg install --yes cmake
   install_llvm_script: |
     cd $HOME
     git clone --single-branch https://github.com/llvm-mirror/llvm
