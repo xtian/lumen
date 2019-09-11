@@ -73,13 +73,23 @@ task:
   name: FreeBSD wasm32
   freebsd_instance:
     image: freebsd-11-2-release-amd64
-    memory: 12
   env:
-    PATH: ${HOME}/.cargo/bin:${PATH}
+    PATH: ${HOME}/llvm/build/bin:${HOME}/.cargo/bin:${PATH}
     # FreeBSD not being a Tier 1 platform for Rust means it does not get rust-lld built for it
     # But, FreeBSD does use LLD as its default linker, which is `ld`
-    RUSTFLAGS: "-C linker=/usr/bin/ld.lld -C link_arg=-L/lib -C link_arg=-L/usr/lib"
-  lld_version_script: /usr/bin/ld.lld --version
+    RUSTFLAGS: "-C linker=${HOME}/llvm/build/bin -C link_arg=-L/lib -C link_arg=-L/usr/lib"
+  install_git_script: pkg install --yes git
+  install_llvm_script: |
+    cd $HOME
+    git clone https://github.com/llvm-mirror/llvm
+    cd llvm/tools
+    git clone https://github.com/llvm-mirror/lld
+    cd ..
+    mkdir build
+    cd build
+    cmake -G "Unix Makefiles" ../
+    make -j8
+  lld_version_script: lld --version
   freebsd_wasm32_cargo_cache:
     folder: $CARGO_HOME/registry
     fingerprint_script: cat Cargo.lock
