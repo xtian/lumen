@@ -2,15 +2,13 @@
 use std::convert::TryInto;
 use std::sync::Arc;
 
-use liblumen_core::locks::RwLock;
-
 #[cfg(test)]
 use liblumen_alloc::erts::exception::runtime;
 use liblumen_alloc::erts::exception::system::Alloc;
 #[cfg(not(test))]
 use liblumen_alloc::erts::exception::Exception;
+use liblumen_alloc::erts::process::code;
 use liblumen_alloc::erts::process::code::stack::frame::{Frame, Placement};
-use liblumen_alloc::erts::process::code::{self, Code};
 use liblumen_alloc::erts::process::Process;
 #[cfg(test)]
 use liblumen_alloc::erts::term::TypedTerm;
@@ -19,38 +17,6 @@ use liblumen_alloc::ModuleFunctionArity;
 
 #[cfg(test)]
 use crate::otp::erlang;
-
-/// Returns the `Code` that should be used in `otp::erlang::spawn_3` to look up and call a known
-/// BIF or user function using the MFA.
-///
-/// ## Preconditons
-///
-/// ### Stack
-///
-/// 1. module - atom `Term`
-/// 2. function - atom `Term`
-/// 3. arguments - list `Term`
-///
-/// ## Post-conditions
-///
-/// ### Ok
-///
-/// #### Stack
-///
-/// 1. return - Term
-///
-/// ### Err
-///
-/// #### Process
-///
-/// * `status` - `Status::Exiting` with exception from lookup or called function.
-pub fn get_code() -> Code {
-    *RW_LOCK_CODE.read()
-}
-
-pub fn set_code(code: Code) {
-    *RW_LOCK_CODE.write() = code;
-}
 
 pub fn place_frame_with_arguments(
     process: &Process,
@@ -142,7 +108,7 @@ pub fn code(arc_process: &Arc<Process>) -> code::Result {
 }
 
 fn frame() -> Frame {
-    Frame::new(module_function_arity(), get_code())
+    Frame::new(module_function_arity(), code)
 }
 
 fn function() -> Atom {
@@ -170,8 +136,4 @@ fn undef(
     arc_process.exception(runtime_exception);
 
     Ok(())
-}
-
-lazy_static! {
-    static ref RW_LOCK_CODE: RwLock<Code> = RwLock::new(code);
 }
